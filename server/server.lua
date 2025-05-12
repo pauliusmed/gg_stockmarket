@@ -270,7 +270,6 @@ AddEventHandler('stockmarket:buyStock', function(stockId, amount, locationName)
         return
     end
 
-    -- Cooldown nustatymas
     setCooldown(_source)
 
     -- Patikriname, ar akcija leidžiama pasirinktoje lokacijoje
@@ -287,12 +286,10 @@ AddEventHandler('stockmarket:buyStock', function(stockId, amount, locationName)
         return
     end
 
-    -- VORP vartotojo ir pinigų informacija
     local User = VorpCore.getUser(_source)
-    local Character = User.getUsedCharacter -- Pataisyta
+    local Character = User.getUsedCharacter
     local playerMoney = Character.money
 
-    -- Akcijos logika
     local stock = Config.Stocks[stockId]
     local currentPrice = stockPrices[stockId] or stock.price
     local totalCost = 0
@@ -302,9 +299,8 @@ AddEventHandler('stockmarket:buyStock', function(stockId, amount, locationName)
         currentPrice = currentPrice + stock.priceChange.increase
     end
         
-        local taxAmount = calculateTax(totalCost)
+    local taxAmount = calculateTax(totalCost)
 
-    -- Patikriname, ar žaidėjas turi pakankamai pinigų
     if playerMoney >= (totalCost + taxAmount) then
         Character.removeCurrency(0, totalCost + taxAmount)
         stockPrices[stockId] = currentPrice
@@ -313,15 +309,15 @@ AddEventHandler('stockmarket:buyStock', function(stockId, amount, locationName)
             ['@id'] = stockId
         })
 
-        VorpInv.addItem(_source, stock.item, amount)
+        -- Ginklų logika
+        if stock.type == "weapon" then
+            TriggerEvent("vorpCore:registerWeapon", _source, stock.item)
+        else
+            VorpInv.addItem(_source, stock.item, amount)
+        end
         
-        -- Formuojame vieną bendrą pranešimą
         local buyMessage = string.format("Pirkote %dx %s už $%.2f (Tax: $%.2f)", amount, stock.label, totalCost, taxAmount)
         
-        -- Debug: spausdiname pranešimą į konsolę
-        DebugPrint("^2[DEBUG] Buy message:^7", buyMessage)
-        
-        -- Siunčiame vieną bendrą pranešimą
         TriggerClientEvent('stockmarket:notify', _source, buyMessage, "success")
         
         updatePricesForAll()
@@ -456,12 +452,11 @@ local function sendToDiscord(title, description, color, isTransaction)
     end
 end
 
--- Pardavimo funkcija su decay logika
+-- Pardavimo funkcija
 RegisterServerEvent('stockmarket:sellStock')
 AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
     local _source = source
 
-    -- Tikriname cooldown
     local onCooldown, remainingTime = isOnCooldown(_source)
     if onCooldown then
         TriggerClientEvent('stockmarket:notify', _source, Translations.cooldownNotification:format(remainingTime), "error")
@@ -487,17 +482,68 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
     local Character = User.getUsedCharacter
     local stock = Config.Stocks[stockId]
 
-    if VorpInv.getItemCount(_source, stock.item) < amount then
-        TriggerClientEvent('stockmarket:notify', _source, Translations.notEnoughItems, "error")
+    -- Ginklų logika
+    if stock.type == "weapon" then
+        exports.vorp_inventory:getUserInventoryWeapons(_source, function(weapons)
+            local weaponId = nil
+            for _, weapon in pairs(weapons) do
+                if weapon.name == stock.item then
+                    weaponId = weapon.id
+                    break
+                end
+            end
+            if not weaponId then
+                TriggerClientEvent('stockmarket:notify', _source, Translations.notEnoughItems, "error")
+                return
+            end
+
+            exports.vorp_inventory:subWeapon(_source, weaponId, function(success)
+                if success then
+                    -- Ginklams nenaudojam degradacijos, visada pilna kaina
+                    local basePrice = stockPrices[stockId] or stock.price
+                    local totalEarnings = basePrice * amount
+                    local taxAmount = calculateTax(totalEarnings)
+                    local finalEarnings = totalEarnings - taxAmount
+
+                    Character.addCurrency(0, finalEarnings)
+
+                    local newPrice = math.max(stock.minPrice, basePrice - (stock.priceChange.decrease * amount))
+                    stockPrices[stockId] = newPrice
+                    
+                    MySQL.Async.execute('UPDATE stocks SET price = @price WHERE stock_id = @id', {
+                        ['@price'] = newPrice,
+                        ['@id'] = stockId
+                    })
+
+                    local saleMessage = string.format("Pardavete %dx %s už $%.2f (Tax: $%.2f)", amount, stock.label, finalEarnings, taxAmount)
+                    TriggerClientEvent('stockmarket:notify', _source, saleMessage, "success")
+
+                    local description = string.format(
+                        "Player sold %dx %s for $%.2f\nBase price: $%.2f\nTax: $%.2f\nLocation: %s", 
+                        amount, 
+                        stock.label, 
+                        finalEarnings,
+                        basePrice * amount,
+                        taxAmount,
+                        locationName
+                    )
+                    sendToDiscord("Stock Market - Sale", description, 15158332, true)
+
+                    updatePricesForAll()
+                else
+                    TriggerClientEvent('stockmarket:notify', _source, "Nepavyko pašalinti ginklo!", "error")
+                end
+            end)
+        end)
         return
+    else
+        if VorpInv.getItemCount(_source, stock.item) < amount then
+            TriggerClientEvent('stockmarket:notify', _source, Translations.notEnoughItems, "error")
+            return
+        end
     end
 
-    -- Gauname daikto degradaciją ir skaičiuojame kainą
     GetItemDegradation(stock.item, _source, function(currentDegradation)
-        DebugPrint("^2[DEBUG] Final degradation value:^7", currentDegradation)
-        DebugPrint("^2[DEBUG] Stock item:^7", stock.item)
-        DebugPrint("^2[DEBUG] Base price:^7", stockPrices[stockId] or stock.price)
-        
         local basePrice = stockPrices[stockId] or stock.price
         local priceWithDecay = CalculatePriceWithDecay(basePrice, currentDegradation)
         local totalEarnings = priceWithDecay * amount
@@ -505,7 +551,19 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
         local taxAmount = calculateTax(totalEarnings)
         local finalEarnings = totalEarnings - taxAmount
 
-        VorpInv.subItem(_source, stock.item, amount)
+        -- Ginklų logika
+        if stock.type == "weapon" then
+            exports.vorp_inventory:subWeapon(_source, weaponId, function(success)
+                if success then
+                    -- čia visa likusi pardavimo logika (pinigai, pranešimai ir t.t.)
+                else
+                    TriggerClientEvent('stockmarket:notify', _source, "Nepavyko pašalinti ginklo!", "error")
+                end
+            end)
+        else
+            VorpInv.subItem(_source, stock.item, amount)
+        end
+
         Character.addCurrency(0, finalEarnings)
 
         local newPrice = math.max(stock.minPrice, basePrice - (stock.priceChange.decrease * amount))
@@ -516,7 +574,6 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
             ['@id'] = stockId
         })
 
-        -- Formuojame vieną bendrą pranešimą
         local saleMessage = ""
         if currentDegradation and currentDegradation < 100 then
             saleMessage = string.format("Pardavete %dx %s už $%.2f (Tax: $%.2f)", amount, stock.label, finalEarnings, taxAmount)
@@ -526,10 +583,8 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
             saleMessage = string.format("Pardavete %dx %s už $%.2f (Tax: $%.2f)", amount, stock.label, finalEarnings, taxAmount)
         end
 
-        -- Siunčiame vieną bendrą pranešimą
         TriggerClientEvent('stockmarket:notify', _source, saleMessage, "success")
 
-        -- Discord pranešimas su detalesne informacija
         local description = string.format(
             "Player sold %dx %s for $%.2f\nBase price: $%.2f\nTax: $%.2f\nCondition: %.1f%%\nLocation: %s", 
             amount, 
