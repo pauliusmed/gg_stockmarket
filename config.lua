@@ -41,8 +41,8 @@ Config.StockMarketLocations = {  --
         stocks = {  "goldnugget" , "cotton", "dogfood","milk","eggs", "Wood", "iron", "consumable_coffee_gnds_reg" } 
     },
     {
-        name = "New Hanover Žaliavu Birža",
-        x = -291.9, y = 780.81, z = 119.26,
+        name = "Lemone Žaliavu Birža",
+        x = 1380.8, y = -1311.26, z = 77.42,
         stocks = {             
             "iron", "coal", "copper", "sulfur", 
             "ironbar", "copperbar", "crate",
@@ -59,8 +59,19 @@ Config.StockMarketLocations = {  --
         }
     },
     {
-        name = "West Elizabeth Žoleliu Birža",
-        x = -942.13, y = -1384.96, z = 50.62,
+
+        name = "Pigus Rubu Parduotuve",
+        x = -5485.83, y = -2938.1, z = -0.4,
+        stocks = {
+            "hat", "shirt", "pants", "boots", "vest", "coat", "glove", "mask", "neckwear", "suspenders", "poncho", "cloak", "bracelet", 
+            "gunbelt", "belt", "buckle", "holster", "chap", "spur", "accessory", "satchel", "gauntlet", "eyewear", "armor", "spats", 
+            "jewelry_rings_left", "jewelry_rings_right", "neckties", "loadouts", "coats_closed"
+        }
+    },
+
+    {
+        name = "Mexicania Žoleliu Birža",
+        x = -3660.65, y = -2595.58, z = -13.31,
         stocks = {             
             'Texas_Bonnet',
             'Black_Currant',
@@ -102,13 +113,32 @@ Config.StockMarketLocations = {  --
 
     {
         name = "New Hanover Maisto Birža",
-        x = -242.47, y = 751.89, z = 117.68,
+        x = -334.42, y = 764.54, z = 116.52,
         stocks = {             
              "bird", "pork", "beef", "venison", "biggame", "stringy", "game", "Mutton", "consumable_meat_succulent_fish_cooked", "eggs", "milk", "dogfood", "animal_rat","acid"
             
         }
     },
-    
+    -- {
+    --     name = "Ginklų Parduotuvė",
+    --     x = 2716.0, y = -1285.0, z = 49.6,
+    --     stocks = { "WEAPON_REPEATER_CARBINE", "WEAPON_RIFLE_VARMINT", "WEAPON_REVOLVER_CATTLEMAN" }
+    -- },
+    {
+        name = "Valentine Prekių Parduotuvė",
+        x = -322.31, y = 803.92, z = 117.88, -- Valentine miesto koordinatės
+        stocks = {
+            "canteen", "dogfood", "pen", "notebook", "telegram", "hairpomade", "WEAPON_MELEE_LANTERN", "lumberaxe", "pickaxe2", "goldpan",
+        }
+    },
+    {
+        name = "Valentine Ginkline",
+        x = -280.86, y = 780.74, z = 119.53,
+        stocks = {
+            "WEAPON_MELEE_KNIFE", "WEAPON_LASSO", "WEAPON_BOW", "cleanshort", "WEAPON_REVOLVER_CATTLEMAN", "WEAPON_RIFLE_VARMINT",
+            "ammovarmint", "ammorevolvernormal", "ammoriflenormal", "ammopistolnormal", "ammoshotgunnormal", "ammorepeaternormal", "ammoarrowsmallgame"
+        }
+    },
 }
 --- Blip settings
 Config.Blip = {
@@ -806,5 +836,226 @@ Config.Stocks = {
         priceChange = { increase = 0.01, decrease = 0.01 }, 
         minPrice = 0.01
     },
+    -- -- Ginklai
+    -- ["WEAPON_REPEATER_CARBINE"] = { 
+    --     label = "Repeater Carbine",  
+    --     price = 1000.00,
+    --     item = "WEAPON_REPEATER_CARBINE",
+    --     priceChange = { increase = 50.00, decrease = 25.00 }, 
+    --     minPrice = 500.00,
+    --     type = "weapon"
+    -- },
+    -- ["WEAPON_RIFLE_VARMINT"] = { 
+    --     label = "Varmint Rifle",  
+    --     price = 800.00,
+    --     item = "WEAPON_RIFLE_VARMINT",
+    --     priceChange = { increase = 40.00, decrease = 20.00 }, 
+    --     minPrice = 400.00,
+    --     type = "weapon"
+    -- },
+    -- ["WEAPON_REVOLVER_CATTLEMAN"] = { 
+    --     label = "Cattleman Revolver",  
+    --     price = 600.00,
+    --     item = "WEAPON_REVOLVER_CATTLEMAN",
+    --     priceChange = { increase = 30.00, decrease = 15.00 }, 
+    --     minPrice = 300.00,
+    --     type = "weapon"
+    -- }
+    ----------- Valentine Prekių Parduotuvės ----------
+    ["canteen"] = { 
+        label = "Gertuvė",  
+        price = 2.50,
+        item = "canteen",
+        priceChange = { increase = 0.13, decrease = 0.06 }, 
+        minPrice = 0.01
+    },
+    ["pen"] = { 
+        label = "Rašiklis",  
+        price = 0.25,
+        item = "pen",
+        priceChange = { increase = 0.01, decrease = 0.01 }, 
+        minPrice = 0.01
+    },
+    ["notebook"] = { 
+        label = "Užrašų Knygutė",  
+        price = 0.25,
+        item = "notebook",
+        priceChange = { increase = 0.01, decrease = 0.01 }, 
+        minPrice = 0.01
+    },
+    ["telegram"] = { 
+        label = "Telegrama",  
+        price = 0.25,
+        item = "telegram",
+        priceChange = { increase = 0.01, decrease = 0.01 }, 
+        minPrice = 0.01
+    },
+    ["hairpomade"] = { 
+        label = "Plaukų Vaškas",  
+        price = 2.50,
+        item = "hairpomade",
+        priceChange = { increase = 0.13, decrease = 0.06 }, 
+        minPrice = 0.01
+    },
+    ["WEAPON_MELEE_LANTERN"] = { 
+        label = "Liktarna",  
+        price = 0.25,
+        item = "WEAPON_MELEE_LANTERN",
+        priceChange = { increase = 0.01, decrease = 0.01 }, 
+        minPrice = 0.01,
+        type = "weapon"
+    },
+    ["lumberaxe"] = { 
+        label = "Kirvis",  
+        price = 50.00,
+        item = "lumberaxe",
+        priceChange = { increase = 2.50, decrease = 1.25 }, 
+        minPrice = 0.01
+    },
+    ["pickaxe2"] = { 
+        label = "Kirtiklis",  
+        price = 2.00,
+        item = "pickaxe2",
+        priceChange = { increase = 0.10, decrease = 0.05 }, 
+        minPrice = 0.01
+    },
+    ["goldpan"] = { 
+        label = "Sijoklis Auksui",  
+        price = 100.00,
+        item = "goldpan",
+        priceChange = { increase = 5.00, decrease = 2.50 }, 
+        minPrice = 0.01
+    },
+    ---- Ginklų parduotuvės ----------
+    ["WEAPON_MELEE_KNIFE"] = {
+        label = "Peilis",
+        price = 21.00,
+        item = "WEAPON_MELEE_KNIFE",
+        priceChange = { increase = 1.00, decrease = 0.50 },
+        minPrice = 0.01,
+        type = "weapon"
+    },
+    ["WEAPON_LASSO"] = {
+        label = "Lasas",
+        price = 28.50,
+        item = "WEAPON_LASSO",
+        priceChange = { increase = 1.25, decrease = 0.63 },
+        minPrice = 0.01,
+        type = "weapon"
+    },
+    ["WEAPON_BOW"] = {
+        label = "Paprastas Lankas",
+        price = 20.00,
+        item = "WEAPON_BOW",
+        priceChange = { increase = 1.00, decrease = 0.50 },
+        minPrice = 0.01,
+        type = "weapon"
+    },
+    ["cleanshort"] = {
+        label = "Ginklo Alyva",
+        price = 3.00,
+        item = "cleanshort",
+        priceChange = { increase = 0.13, decrease = 0.06 },
+        minPrice = 0.01
+    },
+    ["WEAPON_REVOLVER_CATTLEMAN"] = {
+        label = "Cattleman revoleris",
+        price = 31.00,
+        item = "WEAPON_REVOLVER_CATTLEMAN",
+        priceChange = { increase = 1.50, decrease = 0.75 },
+        minPrice = 0.01,
+        type = "weapon"
+    },
+    ["WEAPON_RIFLE_VARMINT"] = {
+        label = "Varmint šautuvas",
+        price = 72.00,
+        item = "WEAPON_RIFLE_VARMINT",
+        priceChange = { increase = 3.50, decrease = 1.75 },
+        minPrice = 0.01,
+        type = "weapon"
+    },
+    ["ammovarmint"] = {
+        label = "Varmintojo Šautuvo Šoviniai",
+        price = 1.00,
+        item = "ammovarmint",
+        priceChange = { increase = 0.05, decrease = 0.03 },
+        minPrice = 0.01
+    },
+    ["ammorevolvernormal"] = {
+        label = "Revolverio šoviniai",
+        price = 1.00,
+        item = "ammorevolvernormal",
+        priceChange = { increase = 0.05, decrease = 0.03 },
+        minPrice = 0.01
+    },
+    ["ammoriflenormal"] = {
+        label = "Graižtvinio Šautuvo Šoviniai",
+        price = 1.00,
+        item = "ammoriflenormal",
+        priceChange = { increase = 0.05, decrease = 0.03 },
+        minPrice = 0.01
+    },
+    ["ammopistolnormal"] = {
+        label = "Pistoleto Šoviniai",
+        price = 1.00,
+        item = "ammopistolnormal",
+        priceChange = { increase = 0.05, decrease = 0.03 },
+        minPrice = 0.01
+    },
+    ["ammoshotgunnormal"] = {
+        label = "Šratinio Šautuvo Šoviniai",
+        price = 1.00,
+        item = "ammoshotgunnormal",
+        priceChange = { increase = 0.05, decrease = 0.03 },
+        minPrice = 0.01
+    },
+    ["ammorepeaternormal"] = {
+        label = "Repeaterio Šoviniai",
+        price = 1.00,
+        item = "ammorepeaternormal",
+        priceChange = { increase = 0.05, decrease = 0.03 },
+        minPrice = 0.01
+    },
+    ["ammoarrowsmallgame"] = {
+        label = "Nekokybiško Lanko Strėlės",
+        price = 1.00,
+        item = "ammoarrowsmallgame",
+        priceChange = { increase = 0.05, decrease = 0.03 },
+        minPrice = 0.01
+    },
+
+    -- Rūbų parduotuvės ----------
+    ["hat"] = { label = "Skrybėlė", price = 7.29, item = "hat", priceChange = { increase = 0.36, decrease = 0.18 }, minPrice = 0.01 },
+    ["shirt"] = { label = "Marškiniai", price = 3.94, item = "shirt", priceChange = { increase = 0.20, decrease = 0.10 }, minPrice = 0.01 },
+    ["pants"] = { label = "Kelnės", price = 3.65, item = "pants", priceChange = { increase = 0.18, decrease = 0.09 }, minPrice = 0.01 },
+    ["boots"] = { label = "Batai", price = 10.36, item = "boots", priceChange = { increase = 0.52, decrease = 0.26 }, minPrice = 0.01 },
+    ["vest"] = { label = "Liemenė", price = 5.78, item = "vest", priceChange = { increase = 0.29, decrease = 0.14 }, minPrice = 0.01 },
+    ["coat"] = { label = "Paltas", price = 8.12, item = "coat", priceChange = { increase = 0.41, decrease = 0.20 }, minPrice = 0.01 },
+    ["glove"] = { label = "Pirštinės", price = 4.88, item = "glove", priceChange = { increase = 0.25, decrease = 0.12 }, minPrice = 0.01 },
+    ["mask"] = { label = "Kaukė", price = 12.50, item = "mask", priceChange = { increase = 0.63, decrease = 0.31 }, minPrice = 0.01 },
+    ["neckwear"] = { label = "Kaklo Apyrankė", price = 4.00, item = "neckwear", priceChange = { increase = 0.20, decrease = 0.10 }, minPrice = 0.01 },
+    ["suspenders"] = { label = "Petnešos", price = 1.78, item = "suspenders", priceChange = { increase = 0.09, decrease = 0.05 }, minPrice = 0.01 },
+    ["poncho"] = { label = "Pončas", price = 6.00, item = "poncho", priceChange = { increase = 0.30, decrease = 0.15 }, minPrice = 0.01 },
+    ["cloak"] = { label = "Apsiaustas", price = 22.50, item = "cloak", priceChange = { increase = 1.13, decrease = 0.56 }, minPrice = 0.01 },
+    ["bracelet"] = { label = "Apyrankė", price = 15.00, item = "bracelet", priceChange = { increase = 0.75, decrease = 0.38 }, minPrice = 0.01 },
+    ["gunbelt"] = { label = "Ginklų Diržas", price = 75.00, item = "gunbelt", priceChange = { increase = 3.75, decrease = 1.88 }, minPrice = 0.01 },
+    ["belt"] = { label = "Diržas", price = 12.50, item = "belt", priceChange = { increase = 0.63, decrease = 0.31 }, minPrice = 0.01 },
+    ["buckle"] = { label = "Diržo Sagtis", price = 7.50, item = "buckle", priceChange = { increase = 0.38, decrease = 0.19 }, minPrice = 0.01 },
+    ["holster"] = { label = "Ginklų Makštis", price = 10.00, item = "holster", priceChange = { increase = 0.50, decrease = 0.25 }, minPrice = 0.01 },
+    ["chap"] = { label = "Šlauninės", price = 5.32, item = "chap", priceChange = { increase = 0.27, decrease = 0.13 }, minPrice = 0.01 },
+    ["spur"] = { label = "Pentinai", price = 6.03, item = "spur", priceChange = { increase = 0.30, decrease = 0.15 }, minPrice = 0.01 },
+    ["accessory"] = { label = "Aksesuaras", price = 1.50, item = "accessory", priceChange = { increase = 0.08, decrease = 0.04 }, minPrice = 0.01 },
+    ["satchel"] = { label = "Kuprinė", price = 17.50, item = "satchel", priceChange = { increase = 0.88, decrease = 0.44 }, minPrice = 0.01 },
+    ["gauntlet"] = { label = "Plieninės Pirštinės", price = 12.50, item = "gauntlet", priceChange = { increase = 0.63, decrease = 0.31 }, minPrice = 0.01 },
+    ["eyewear"] = { label = "Akiniai", price = 6.00, item = "eyewear", priceChange = { increase = 0.30, decrease = 0.15 }, minPrice = 0.01 },
+    ["armor"] = { label = "Šarvai", price = 35.00, item = "armor", priceChange = { increase = 1.75, decrease = 0.88 }, minPrice = 0.01 },
+    ["spats"] = { label = "Kojinės", price = 2.50, item = "spats", priceChange = { increase = 0.13, decrease = 0.06 }, minPrice = 0.01 },
+    ["jewelry_rings_left"] = { label = "Žiedas (Kairė)", price = 20.00, item = "jewelry_rings_left", priceChange = { increase = 1.00, decrease = 0.50 }, minPrice = 0.01 },
+    ["jewelry_rings_right"] = { label = "Žiedas (Dešinė)", price = 20.00, item = "jewelry_rings_right", priceChange = { increase = 1.00, decrease = 0.50 }, minPrice = 0.01 },
+    ["neckties"] = { label = "Kaklaraištis", price = 4.50, item = "neckties", priceChange = { increase = 0.23, decrease = 0.11 }, minPrice = 0.01 },
+    ["loadouts"] = { label = "Įranga", price = 12.50, item = "loadouts", priceChange = { increase = 0.63, decrease = 0.31 }, minPrice = 0.01 },
+    ["coats_closed"] = { label = "Uždarytas Paltas", price = 9.00, item = "coats_closed", priceChange = { increase = 0.45, decrease = 0.23 }, minPrice = 0.01 }
 }
+
+
 
