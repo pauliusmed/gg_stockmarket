@@ -1,5 +1,6 @@
 local VorpCore = {}
 local VorpInv = {}
+<<<<<<< HEAD
 local stockPrices = {} -- Ši lentelė laikys kainas su 2 skaitmenimis po kablelio (DB formatas)
 local preciseStockPrices = {} -- Ši lentelė laikys kainas su didesniu tikslumu atmintyje
 local cooldowns = {} --  cooldown for all players
@@ -47,6 +48,11 @@ local DebugMessages = {
     defaultDegradation = "^2[DEBUG] No degradation found, using default 100%^7"
 }
 
+=======
+local stockPrices = {}
+local cooldowns = {} --  cooldown for all players
+
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 -- Initialize translations
 local Translations = {}
 
@@ -62,7 +68,11 @@ setmetatable(Translations, {
         local language = Config.Language or "en"
         local translation = Config.Translations[language][key] or Config.Translations["en"][key]
         if not translation then
+<<<<<<< HEAD
             print(string.format(Config.SystemMessages.noTranslation, key))
+=======
+            print(string.format("No translations for '%s' .", key))
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
             return key -- Grąžins raktą kaip atsarginį vertimą
         end
         return translation
@@ -76,6 +86,7 @@ end)
 VorpInv = exports.vorp_inventory:vorp_inventoryApi()
 
 
+<<<<<<< HEAD
 -- Įterpiame trūkstamas funkcijas, perkeltos aukščiau, kad būtų pasiekiamos globaliai
 local function round(value, decimals)
     local multiplier = 10^(decimals or 0)
@@ -107,6 +118,25 @@ MySQL.ready(function()
         }, function(count)
             if count == 0 then
                 MySQL.Async.execute(SQL.insertStock, {
+=======
+-- Sukurkite lentelę, jei jos nėra, ir pridėkite trūkstamus įrašus
+MySQL.ready(function()
+    -- Lentelės kūrimas
+    MySQL.Async.execute([[
+        CREATE TABLE IF NOT EXISTS stocks (
+            stock_id VARCHAR(50) PRIMARY KEY,
+            price DECIMAL(10, 2) NOT NULL
+        )
+    ]], {})
+
+    -- Patikrinkite ir pridėkite trūkstamus įrašus
+    for stockId, stock in pairs(Config.Stocks) do
+        MySQL.Async.fetchScalar('SELECT COUNT(*) FROM stocks WHERE stock_id = @stock_id', {
+            ['@stock_id'] = stockId
+        }, function(count)
+            if count == 0 then
+                MySQL.Async.execute('INSERT INTO stocks (stock_id, price) VALUES (@stock_id, @price)', {
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
                     ['@stock_id'] = stockId,
                     ['@price'] = stock.price
                 })
@@ -119,6 +149,7 @@ end)
 
 -- Load initial data if the table was created
 MySQL.ready(function()
+<<<<<<< HEAD
     MySQL.Async.fetchAll(SQL.selectAllCount, {}, function(result)
         if result[1].count == 0 then
             for stockId, stock in pairs(Config.Stocks) do
@@ -127,16 +158,32 @@ MySQL.ready(function()
                 })
             end
             print(Config.SystemMessages.initialDataLoaded)
+=======
+    MySQL.Async.fetchAll('SELECT COUNT(*) AS count FROM stocks', {}, function(result)
+        if result[1].count == 0 then
+            for stockId, stock in pairs(Config.Stocks) do
+                MySQL.Async.execute('INSERT INTO stocks (stock_id, price) VALUES (@stock_id, @price)', {
+                    stock_id = stockId, price = stock.price
+                })
+            end
+            print("[Stock Market] Pradiniai duomenys įkelti.")
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         end
     end)
 end)
 
 -- Load prices from the database
 MySQL.ready(function()
+<<<<<<< HEAD
     MySQL.Async.fetchAll(SQL.selectAllStocks, {}, function(results)
         for _, row in pairs(results) do
             stockPrices[row.stock_id] = tonumber(row.price) -- Užtikrinam, kad tai skaičius
             preciseStockPrices[row.stock_id] = tonumber(row.price) -- Pradžioje tikslumas toks pat kaip DB
+=======
+    MySQL.Async.fetchAll('SELECT stock_id, price FROM stocks', {}, function(results)
+        for _, row in pairs(results) do
+            stockPrices[row.stock_id] = row.price
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         end
     end)
 end)
@@ -151,6 +198,7 @@ end
 -- Function to update prices for all clients
 local function updatePricesForAll()
     local prices = {}
+<<<<<<< HEAD
     if Config.Debug then DebugPrint("[STOCKMARKET_DEBUG] updatePricesForAll called (will update all clients).") end
     for stockId, stock in pairs(Config.Stocks) do
         local currentMarketPrice_PreTax = preciseStockPrices[stockId] or stock.price
@@ -169,6 +217,12 @@ local function updatePricesForAll()
         -- end
 
         prices[stockId] = { buy = buyPriceForClientDisplay, sell = sellPriceForClientDisplay }
+=======
+    for stockId, stock in pairs(Config.Stocks) do
+        local buyPrice = stockPrices[stockId] or stock.price
+        local sellPrice = math.max(stock.minPrice, buyPrice - stock.priceChange.decrease)
+        prices[stockId] = { buy = buyPrice, sell = sellPrice }
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
     end    
     TriggerClientEvent('stockmarket:updatePrices', -1, prices)
 end
@@ -199,6 +253,7 @@ end
 
 --Discord hook
 local function sendSummaryToDiscord()
+<<<<<<< HEAD
     -- 1) Build groups of locations with identical stock sets
     local function canonicalKey(stocks)
         local copy = {}
@@ -273,6 +328,81 @@ local function sendSummaryToDiscord()
             end
         end, 'POST', jsonPayload, { ['Content-Type'] = 'application/json' })
         index = index + 10
+=======
+    local embed = {
+        title = "📈 Biržos Laikmatis - Current Stock Prices",
+        color = 0x00ff00, -- Pasirinkite norimą spalvą
+        fields = {}
+    }
+
+    -- Pridedame kiekvieną biržos vietą
+    for _, location in ipairs(Config.StockMarketLocations) do
+        local lines = {}
+        
+        -- Surenkame kiekvienos akcijos informaciją kaip eilutę
+        for _, stockId in ipairs(location.stocks) do
+            local stock = Config.Stocks[stockId]
+            if stock then
+                local buyPrice = stockPrices[stockId] or stock.price
+                local sellPrice = math.max(stock.minPrice, buyPrice - stock.priceChange.decrease)
+                local buyPriceStr = string.format("$%.2f", buyPrice)
+                local sellPriceStr = string.format("$%.2f", sellPrice)
+                table.insert(lines, string.format("%s: %s | %s", stock.label, buyPriceStr, sellPriceStr))
+            end
+        end
+        
+        if #lines == 0 then
+            lines = {"Šioje vietoje nėra prekių"}
+        end
+        
+        -- Suskaidome eilutes į kelias dalis, kad kiekvieno lauko ilgis neviršytų 1024 simbolių
+        local chunks = {}
+        local currentChunk = ""
+        for i, line in ipairs(lines) do
+            if currentChunk == "" then
+                currentChunk = line
+            else
+                if string.len(currentChunk) + 1 + string.len(line) <= 1024 then
+                    currentChunk = currentChunk .. "\n" .. line
+                else
+                    table.insert(chunks, currentChunk)
+                    currentChunk = line
+                end
+            end
+        end
+        if currentChunk ~= "" then
+            table.insert(chunks, currentChunk)
+        end
+        
+        -- Kiekvieną chunką įdedame į embed laukus
+        for i, chunk in ipairs(chunks) do
+            local fieldName = location.name
+            if i > 1 then
+                fieldName = fieldName .. " (toliau)"
+            end
+            table.insert(embed.fields, {
+                name = fieldName,
+                value = chunk,
+                inline = false
+            })
+        end
+    end
+
+    -- Siunčiame embed žinutę į Discord per webhook
+    if Config.discordWebhook then
+        local webhookUrl = Config.webhookUrl
+        if webhookUrl then
+            local payload = { content = "Biržos atnaujinimas", embeds = { embed } }
+            local jsonPayload = json.encode(payload)
+            PerformHttpRequest(webhookUrl, 
+                function(err, text, headers)
+                end, 
+                'POST', 
+                jsonPayload, 
+                { ['Content-Type'] = 'application/json' }
+            )
+        end
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
     end
 end
 
@@ -291,6 +421,7 @@ end)
 RegisterCommand(Config.Discordwebhookmanualcommand, function(source, args)
     -- Check if the Discord sending feature is enabled
     if not Config.discordWebhook then
+<<<<<<< HEAD
         print(Config.DiscordFormats.adminMessages.disabledFeature)
         return
     end
@@ -304,16 +435,46 @@ RegisterCommand(Config.Discordwebhookmanualcommand, function(source, args)
             TriggerClientEvent('vorp:TipBottom', source, Config.DiscordFormats.adminMessages.successMessage, 3000)
         else
             TriggerClientEvent('vorp:TipBottom', source, Config.DiscordFormats.adminMessages.unauthorizedMessage, 3000)
+=======
+        print("^1[Stock Market]^7 Discord sending feature is disabled in the configuration.")
+        return
+    end
+    if source == 0 then -- RCON
+        print("^1[Stock Market]^7 Discord summary sent.")
+    else
+        local player = VorpCore.getUser(source).getUsedCharacter
+        local group = player.group
+        if group == "admin" then
+            sendSummaryToDiscord()
+            TriggerClientEvent('vorp:TipBottom', source, "Discord summary sent.", 3000)
+        else
+            TriggerClientEvent('vorp:TipBottom', source, "Only admins can use this command.", 3000)
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         end
     end
 end, false)
 
+<<<<<<< HEAD
+=======
+--- taxAmount
+local function round(value, decimals)
+    local multiplier = 10^(decimals or 0)
+    local rounded = math.floor(value * multiplier + 0.5) / multiplier    
+    return rounded
+end
+local function calculateTax(totalCost)
+    local rawTax = totalCost * (Config.Tax / 100)    
+    return round(rawTax, 2)
+end
+
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 -- Request event
 RegisterServerEvent('stockmarket:requestPrices')
 AddEventHandler('stockmarket:requestPrices', function()
     local _source = source
     local prices = {}
     for stockId, stock in pairs(Config.Stocks) do
+<<<<<<< HEAD
         local currentMarketPrice_PreTax = stockPrices[stockId] or stock.price
         local taxForOneUnit = calculateTax(currentMarketPrice_PreTax) -- Apskaičiuojame mokestį vienam vienetui
 
@@ -323,6 +484,11 @@ AddEventHandler('stockmarket:requestPrices', function()
         local sellPriceForClientDisplay = math.max(stock.minPrice, currentMarketPrice_PreTax * (1 - stock.priceChange / 100))
         
         prices[stockId] = { buy = buyPriceForClientDisplay, sell = sellPriceForClientDisplay }
+=======
+        local buyPrice = stockPrices[stockId] or stock.price
+        local sellPrice = math.max(stock.minPrice, buyPrice - stock.priceChange.decrease)
+        prices[stockId] = { buy = buyPrice, sell = sellPrice }
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
     end
     TriggerClientEvent('stockmarket:updatePrices', _source, prices)
 end)
@@ -335,7 +501,11 @@ AddEventHandler('stockmarket:buyStock', function(stockId, amount, locationName)
     -- General cooldown check
     local onCooldown, remainingTime = isOnCooldown(_source)
     if onCooldown then
+<<<<<<< HEAD
         TriggerClientEvent('stockmarket:notify', _source, string.format(Translations.cooldownNotification, remainingTime), "error")
+=======
+        TriggerClientEvent('stockmarket:notify', _source, Translations.cooldownNotification:format(remainingTime), "error")
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         return
     end
 
@@ -351,7 +521,11 @@ AddEventHandler('stockmarket:buyStock', function(stockId, amount, locationName)
     end
 
     if not isStockValid then
+<<<<<<< HEAD
         TriggerClientEvent('stockmarket:notify', _source, Translations.invalidStock, "error")
+=======
+        TriggerClientEvent('stockmarket:notify', _source, "Ši akcija neveikia šioje vietoje!", "error")
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         return
     end
 
@@ -360,6 +534,7 @@ AddEventHandler('stockmarket:buyStock', function(stockId, amount, locationName)
     local playerMoney = Character.money
 
     local stock = Config.Stocks[stockId]
+<<<<<<< HEAD
     -- Imam pradinę kainą iš tiksliosios lentelės
     local currentPrecisePrice = preciseStockPrices[stockId] or stock.price 
     local preciseTotalCost_PreTax = 0 
@@ -453,6 +628,36 @@ AddEventHandler('stockmarket:buyStock', function(stockId, amount, locationName)
             singleClientPrices[sId] = { buy = buyPriceForClientDisplay_single, sell = sellPriceForClientDisplay_single }
         end
         TriggerClientEvent('stockmarket:updatePrices', _source, singleClientPrices)
+=======
+    local currentPrice = stockPrices[stockId] or stock.price
+    local totalCost = 0
+
+    for i = 1, amount do
+        totalCost = totalCost + currentPrice
+        currentPrice = currentPrice + stock.priceChange.increase
+    end
+        
+    local taxAmount = calculateTax(totalCost)
+
+    if playerMoney >= (totalCost + taxAmount) then
+        Character.removeCurrency(0, totalCost + taxAmount)
+        stockPrices[stockId] = currentPrice
+        MySQL.Async.execute('UPDATE stocks SET price = @price WHERE stock_id = @id', {
+            ['@price'] = currentPrice,
+            ['@id'] = stockId
+        })
+
+        -- Ginklų logika
+        if stock.type == "weapon" then
+            TriggerEvent("vorpCore:registerWeapon", _source, stock.item)
+        else
+            VorpInv.addItem(_source, stock.item, amount)
+        end
+        
+        local buyMessage = string.format("Pirkote %dx %s už $%.2f (Tax: $%.2f)", amount, stock.label, totalCost, taxAmount)
+        
+        TriggerClientEvent('stockmarket:notify', _source, buyMessage, "success")
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         
         updatePricesForAll()
     else
@@ -460,6 +665,29 @@ AddEventHandler('stockmarket:buyStock', function(stockId, amount, locationName)
     end
 end)
 
+<<<<<<< HEAD
+=======
+
+
+-- Funkcija patikrinti ar daiktas yra gendantis
+local function IsPerishableItem(itemName)
+    -- Čia galite pridėti logiką, kuri tikrina ar daiktas yra maistas ar kitas gendantis daiktas
+    -- Pavyzdžiui, galite turėti sąrašą gendančių daiktų
+    local perishableItems = {
+        "meat", "fish", "fruit", "vegetable", "milk", "bread"
+        -- Pridėkite kitus gendančius daiktus
+    }
+    
+    for _, name in ipairs(perishableItems) do
+        if name == itemName then
+            return true
+        end
+    end
+    
+    return false
+end
+
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 -- Funkcija gauti daikto maksimalią degradaciją
 local function GetItemMaxDegradation(itemName)
     if Config.ExpirationRules then
@@ -472,6 +700,7 @@ local function GetItemMaxDegradation(itemName)
     return nil
 end
 
+<<<<<<< HEAD
 -- Funkcija gauti daikto degradaciją iš VORP inventory
 local function GetItemDegradation(itemName, source, callback)
     local items = VorpInv.getUserInventory(source)
@@ -524,10 +753,41 @@ local function GetItemDegradation(itemName, source, callback)
                     return
                 else -- item.percentage yra ne nil ir ne 0
                     callback(percentage)
+=======
+-- Funkcija gauti daikto degradaciją
+local function GetItemDegradation(itemName, source, callback)
+    -- Gauname visus žaidėjo inventory daiktus
+    local items = VorpInv.getUserInventory(source)
+    
+    DebugPrint("^2[DEBUG] Checking degradation for item:^7", itemName)
+    DebugPrint("^2[DEBUG] Total inventory items:^7", #items)
+    
+    -- Ieškome konkretaus daikto
+    for _, item in pairs(items) do
+        DebugPrint("^2[DEBUG] Checking item:^7", item.name)
+        if item.name == itemName then
+            DebugPrint("^2[DEBUG] Found matching item:^7", itemName)
+            
+            -- Gauname metadata tiesiogiai iš item objekto
+            local metadata = item.metadata
+            DebugPrint("^2[DEBUG] Item metadata:^7", json.encode(metadata or {}))
+            
+            -- Tikriname visus galimus metadata laukus
+            if metadata then
+                local degradation = metadata.durability or 
+                                  metadata.condition or 
+                                  metadata.degradation or 
+                                  metadata.percentage
+                
+                DebugPrint("^2[DEBUG] Found degradation value:^7", degradation)
+                if degradation then
+                    callback(tonumber(degradation))
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
                     return
                 end
             end
             
+<<<<<<< HEAD
             -- Jei pasiekėme čia: item.name sutapo, bet NEBUVO metadata su būkle IR NEBUVO item.percentage.
             -- Tai yra tikras "daiktas be būklės duomenų".
             DebugPrint(string.format("^2[DEBUG] No degradation data (metadata/item.percentage was nil) found for matched item %s. Using default 100%%.^7", itemName))
@@ -548,6 +808,35 @@ local function CalculatePriceWithDecay(basePrice, currentDegradation)
         return 0
     end
 
+=======
+            -- Bandome gauti percentage iš item
+            if item.percentage then
+                local percentage = tonumber(item.percentage)
+                DebugPrint("^2[DEBUG] Using item percentage:^7", percentage)
+                
+                -- Jei percentage yra 0, bet tai nėra maisto produktas ar gendantis daiktas,
+                -- laikome, kad tai yra 100% būklės
+                if percentage == 0 and not IsPerishableItem(itemName) then
+                    DebugPrint("^2[DEBUG] Item with 0% is not perishable, using 100%^7")
+                    callback(100)
+                    return
+                end
+                
+                callback(percentage)
+                return
+            end
+        end
+    end
+    
+    DebugPrint("^2[DEBUG] No degradation found, using default 100%^7")
+    callback(100) -- Grąžiname 100% jei nerandame degradacijos
+end
+
+
+
+-- Kainos skaičiavimo funkcija su decay
+local function CalculatePriceWithDecay(basePrice, currentDegradation)
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
     -- Jei daikto būklė viršija arba lygi tolerancijos ribai - pilna kaina
     if currentDegradation >= Config.DecayTolerance then
         return basePrice
@@ -555,8 +844,13 @@ local function CalculatePriceWithDecay(basePrice, currentDegradation)
     
     -- Degradation yra procentais (0-100)
     local condition = currentDegradation / 100
+<<<<<<< HEAD
     -- Apribojame condition tarp 0.0 ir 1.0 (0% - 100% originalios kainos)
     condition = math.max(0.0, math.min(1.0, condition)) -- Pakeista 0.1 į 0.0
+=======
+    -- Apribojame condition tarp 0.1 ir 1.0 (10% - 100% originalios kainos)
+    condition = math.max(0.1, math.min(1.0, condition))
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
     return basePrice * condition
 end
 
@@ -590,7 +884,11 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
 
     local onCooldown, remainingTime = isOnCooldown(_source)
     if onCooldown then
+<<<<<<< HEAD
         TriggerClientEvent('stockmarket:notify', _source, string.format(Translations.cooldownNotification, remainingTime), "error")
+=======
+        TriggerClientEvent('stockmarket:notify', _source, Translations.cooldownNotification:format(remainingTime), "error")
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         return
     end
 
@@ -605,7 +903,11 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
     end
 
     if not isStockValid then
+<<<<<<< HEAD
         TriggerClientEvent('stockmarket:notify', _source, Translations.invalidStock, "error")
+=======
+        TriggerClientEvent('stockmarket:notify', _source, "Ši akcija neveikia šioje vietoje!", "error")
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         return
     end
 
@@ -613,12 +915,15 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
     local Character = User.getUsedCharacter
     local stock = Config.Stocks[stockId]
 
+<<<<<<< HEAD
     -- Nustatome dabartinę rinkos kainą (tai yra pirkimo kaina) iš tiksliosios lentelės
     local actualPreciseMarketPrice = preciseStockPrices[stockId] or stock.price 
 
     -- Nustatome efektyvią pardavimo kainą už vienetą, kurią žaidėjas turėtų gauti (iš tikslios rinkos kainos)
     local effectivePreciseSellPricePerUnit = math.max(stock.minPrice, actualPreciseMarketPrice * (1 - stock.priceChange / 100))
 
+=======
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
     -- Ginklų logika
     if stock.type == "weapon" then
         exports.vorp_inventory:getUserInventoryWeapons(_source, function(weapons)
@@ -636,6 +941,7 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
 
             exports.vorp_inventory:subWeapon(_source, weaponId, function(success)
                 if success then
+<<<<<<< HEAD
                     -- Weapons do not use degradation. Compute per-unit decreasing price and apply tax to the total.
                     local iterPrice = actualPreciseMarketPrice
                     local grossEarnings = 0
@@ -706,6 +1012,41 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
                     updatePricesForAll()
                 else
                     TriggerClientEvent('stockmarket:notify', _source, Translations.failedToRemoveWeapon, "error")
+=======
+                    -- Ginklams nenaudojam degradacijos, visada pilna kaina
+                    local basePrice = stockPrices[stockId] or stock.price
+                    local totalEarnings = basePrice * amount
+                    local taxAmount = calculateTax(totalEarnings)
+                    local finalEarnings = totalEarnings - taxAmount
+
+                    Character.addCurrency(0, finalEarnings)
+
+                    local newPrice = math.max(stock.minPrice, basePrice - (stock.priceChange.decrease * amount))
+                    stockPrices[stockId] = newPrice
+                    
+                    MySQL.Async.execute('UPDATE stocks SET price = @price WHERE stock_id = @id', {
+                        ['@price'] = newPrice,
+                        ['@id'] = stockId
+                    })
+
+                    local saleMessage = string.format("Pardavete %dx %s už $%.2f (Tax: $%.2f)", amount, stock.label, finalEarnings, taxAmount)
+                    TriggerClientEvent('stockmarket:notify', _source, saleMessage, "success")
+
+                    local description = string.format(
+                        "Player sold %dx %s for $%.2f\nBase price: $%.2f\nTax: $%.2f\nLocation: %s", 
+                        amount, 
+                        stock.label, 
+                        finalEarnings,
+                        basePrice * amount,
+                        taxAmount,
+                        locationName
+                    )
+                    sendToDiscord("Stock Market - Sale", description, 15158332, true)
+
+                    updatePricesForAll()
+                else
+                    TriggerClientEvent('stockmarket:notify', _source, "Nepavyko pašalinti ginklo!", "error")
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
                 end
             end)
         end)
@@ -717,6 +1058,7 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
         end
     end
 
+<<<<<<< HEAD
     -- Bendroji logika daiktams (įskaitant tuos su degradacija)
     GetItemDegradation(stock.item, _source, function(currentDegradation)
         -- Sum gross per unit with decreasing price and apply decay per unit
@@ -735,11 +1077,31 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
         -- Reikia užtikrinti, kad daiktas būtų pašalintas
         if stock.type == "weapon" then -- Šis blokas neturėtų būti pasiektas, jei ginklai tvarkomi aukščiau
             -- exports.vorp_inventory:subWeapon... (jau įvykdyta)
+=======
+    GetItemDegradation(stock.item, _source, function(currentDegradation)
+        local basePrice = stockPrices[stockId] or stock.price
+        local priceWithDecay = CalculatePriceWithDecay(basePrice, currentDegradation)
+        local totalEarnings = priceWithDecay * amount
+        
+        local taxAmount = calculateTax(totalEarnings)
+        local finalEarnings = totalEarnings - taxAmount
+
+        -- Ginklų logika
+        if stock.type == "weapon" then
+            exports.vorp_inventory:subWeapon(_source, weaponId, function(success)
+                if success then
+                    -- čia visa likusi pardavimo logika (pinigai, pranešimai ir t.t.)
+                else
+                    TriggerClientEvent('stockmarket:notify', _source, "Nepavyko pašalinti ginklo!", "error")
+                end
+            end)
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         else
             VorpInv.subItem(_source, stock.item, amount)
         end
 
         Character.addCurrency(0, finalEarnings)
+<<<<<<< HEAD
         
         -- Record collected tax from sale
         if taxAmountForDiscordAndAccounting > 0 then
@@ -800,11 +1162,45 @@ AddEventHandler('stockmarket:sellStock', function(stockId, amount, locationName)
             locationName
         )
         sendToDiscord(Config.DiscordFormats.saleTitle, description, Config.DiscordFormats.saleColor, true)
+=======
+
+        local newPrice = math.max(stock.minPrice, basePrice - (stock.priceChange.decrease * amount))
+        stockPrices[stockId] = newPrice
+        
+        MySQL.Async.execute('UPDATE stocks SET price = @price WHERE stock_id = @id', {
+            ['@price'] = newPrice,
+            ['@id'] = stockId
+        })
+
+        local saleMessage = ""
+        if currentDegradation and currentDegradation < 100 then
+            saleMessage = string.format("Pardavete %dx %s už $%.2f (Tax: $%.2f)", amount, stock.label, finalEarnings, taxAmount)
+            saleMessage = saleMessage .. string.format("\nDaikto bukle: %d%%", currentDegradation)
+            saleMessage = saleMessage .. string.format("\nPilna kaina butu: $%.2f", basePrice * amount)
+        else
+            saleMessage = string.format("Pardavete %dx %s už $%.2f (Tax: $%.2f)", amount, stock.label, finalEarnings, taxAmount)
+        end
+
+        TriggerClientEvent('stockmarket:notify', _source, saleMessage, "success")
+
+        local description = string.format(
+            "Player sold %dx %s for $%.2f\nBase price: $%.2f\nTax: $%.2f\nCondition: %.1f%%\nLocation: %s", 
+            amount, 
+            stock.label, 
+            finalEarnings,
+            basePrice * amount,
+            taxAmount,
+            currentDegradation,
+            locationName
+        )
+        sendToDiscord("Stock Market - Sale", description, 15158332, true)
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 
         updatePricesForAll()
     end)
 end)
 
+<<<<<<< HEAD
 -- Admino komanda patikrinti surinktus mokesčius
 RegisterCommand(Config.AdminCommands and Config.AdminCommands.CheckStockTaxCommand or "checkstocktax", function(source, args, rawCommand)
     local user = VorpCore.getUser(source)
@@ -917,6 +1313,9 @@ AddEventHandler('stockmarket:calculateTotal', function(stockId, amount, action, 
         TriggerClientEvent('stockmarket:calculatedTotal', _source, result)
     end)
 end)
+=======
+
+>>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 
 
 
