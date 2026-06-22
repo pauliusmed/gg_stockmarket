@@ -1,7 +1,7 @@
 fx_version 'adamant'
 game 'rdr3'
 
-author 'GrybasTv'
+author 'pauliusmed'
 description 'RedM Stock Market System using VORP Core'
 version '1.4.1'
 

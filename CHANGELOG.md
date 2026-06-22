@@ -11,3 +11,5 @@ All notable changes to this project will be documented in this file.
 - Išlaikyti visi pažangūs funkcionalumai iš `HEAD` šakos (tikslios kainos `preciseStockPrices`, mokesčių DB lentelės ir surinkimas, interaktyvūs slankikliai meniu, dinaminis blipų matomumas pagal darbo valandas).
 - Ištaisyta indentacija pagalbiniam funkcijų blokui `server/server.lua` faile.
 - Ištaisytas globalių kintamųjų nuotėkis (global leak) pridedant `local` prie `amountBuy` ir `amountSell` `client/client.lua` failo `calculatedTotal` įvykio apdorojime.
+- Pakeistas autoriaus vardas projekto failuose (`README.md`, `fxmanifest.lua`) iš `GrybasTv` į `pauliusmed`.
+- Pridėta sistemos architektūros Mermaid diagrama į `README.md` failą.

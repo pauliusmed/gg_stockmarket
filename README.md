@@ -29,6 +29,44 @@ To run this script, you need the following resources:
 
 ---
 
+## 📐 System Architecture
+
+This diagram illustrates how client interactions, server-side validation, database logging, and external integrations (Discord) communicate:
+
+```mermaid
+graph TD
+    subgraph Client [Client-Side / client.lua]
+        UI["VORP Menu UI"]
+        Loop["Proximity & Drawing Loop"]
+        Blip["Dynamic Blip Manager"]
+        UI -->|Slider Change| EventsCalc["Event: calculateTotal"]
+        UI -->|Confirm Trade| EventsTrade["Event: buyStock / sellStock"]
+        Loop -->|Draw 3D Prices| UI
+        Blip -->|Open/Closed Hours| BlipState["Red/Green Map Blips"]
+    end
+
+    subgraph Server [Server-Side / server.lua]
+        Core["VORP Core / User State"]
+        Inv["VORP Inventory / Weapons API"]
+        Calc["Tax & Item Decay Calculator"]
+        DB[("MySQL Database")]
+        Discord["Discord Webhook API"]
+        
+        EventsCalc -->|Preview calculation| Calc
+        EventsTrade -->|Validate & Deduct| Core
+        Core -->|Check Inventory & Limits| Inv
+        Inv -->|Condition Checks| Calc
+        Calc -->|Update In-Memory Rates| Core
+        Core -->|Save updated prices| DB
+        Core -->|Record collected taxes| DB
+        Core -->|Log Transaction| Discord
+    end
+    
+    Server -->|Broadcast new prices| Client
+```
+
+---
+
 ## 📥 Installation
 
 1. **Download** the resource.
@@ -74,7 +112,7 @@ Tai yra dinamiška akcijų biržos sistema skirta RedM serveriams.
 ---
 
 ## 👨‍💻 Author
-Created by **GrybasTv**
+Created by **pauliusmed**
 
 ---
 
