@@ -1,6 +1,5 @@
 local currentStockPrices = {}
 local MenuData = {}
-<<<<<<< HEAD
 local blips = {} -- Table to store PERMANENT blips created at script start
 local VORPcore = {}
 local Translations = {}
@@ -17,17 +16,7 @@ end
 
 local joaat = GetHashKey
 
--- Or define it as a global function
-joaat = GetHashKey
-
 -- VORP Core and Menu API initialization
-=======
-local blips = {}
-local VORPcore = {}
-local Translations = {}
-
--- VORP Core ir Menu API inicijavimas
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 TriggerEvent("getCore", function(core)
     VORPcore = core
 end)
@@ -37,11 +26,7 @@ TriggerEvent("menuapi:getData", function(call)
     MenuData = call
 end)
 
-<<<<<<< HEAD
 -- Translations
-=======
--- Vertimai
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 Citizen.CreateThread(function()
     local language = Config.Language or "en"
     Translations = Config.Translations[language] or Config.Translations["en"]
@@ -52,11 +37,7 @@ setmetatable(Translations, {
         local language = Config.Language or "en"
         local translation = Config.Translations[language][key] or Config.Translations["en"][key]
         if not translation then
-<<<<<<< HEAD
             DebugPrint(string.format("No translations for '%s' .", key))
-=======
-            print(string.format("No translations for '%s' .", key))
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
             return key
         end
         return translation
@@ -66,17 +47,11 @@ setmetatable(Translations, {
 -- Notification system
 RegisterNetEvent('stockmarket:notify')
 AddEventHandler('stockmarket:notify', function(message, messageType)
-<<<<<<< HEAD
     -- Split message into lines
-=======
-    -- Padalinkime pranešimą į eilutes
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
     local lines = {}
     for line in message:gmatch("[^\n]+") do
         table.insert(lines, line)
     end
-
-<<<<<<< HEAD
     -- Show each line separately with longer duration for success messages
     for i, line in ipairs(lines) do
         if messageType == "success" then
@@ -156,15 +131,14 @@ RegisterNetEvent('stockmarket:calculatedTotal')
 AddEventHandler('stockmarket:calculatedTotal', function(data)
     local menuOpen = CurrentStockActionMenu
     DebugPrint("[calculatedTotal] Received response from server:", json.encode(data), "CurrentStockActionMenu:", tostring(menuOpen))
-    DebugPrint("[calculatedTotal] data.action:", data.action, "data.total:", data.total)
     if menuOpen and menuOpen.setElement then
         if data.action == "buy" then
-            amountBuy = data.total
+            local amountBuy = data.total
             DebugPrint("[calculatedTotal] Setting amountBuy to:", amountBuy)
             menuOpen.setElement(2, 'descPrice', { amount = amountBuy, icon = 'money', text = Translations.buyText })
             menuOpen.setElement(4, 'descPrice', { amount = amountBuy, icon = 'money', text = Translations.total })
         elseif data.action == "sell" then
-            amountSell = data.total
+            local amountSell = data.total
             DebugPrint("[calculatedTotal] Setting amountSell to:", amountSell)
             menuOpen.setElement(3, 'descPrice', { amount = amountSell, icon = 'money', text = Translations.sellText })
             menuOpen.setElement(4, 'descPrice', { amount = amountSell, icon = 'money', text = Translations.total })
@@ -173,24 +147,6 @@ AddEventHandler('stockmarket:calculatedTotal', function(data)
     else
         DebugPrint("[calculatedTotal] CurrentStockActionMenu is nil or doesn't have setElement!")
     end
-=======
-    -- Rodome kiekvieną eilutę atskirai
-    for i, line in ipairs(lines) do
-        if messageType == "success" then
-            TriggerEvent("vorp:TipRight", line, 4000 + (i * 1000))
-        elseif messageType == "error" then        
-            TriggerEvent("vorp:TipRight", line, 4000 + (i * 1000))
-        else
-            TriggerEvent("vorp:TipRight", line, 4000 + (i * 1000))
-        end
-    end
-end)
-
--- Gauti kainas iš serverio
-RegisterNetEvent('stockmarket:updatePrices')
-AddEventHandler('stockmarket:updatePrices', function(prices)
-    currentStockPrices = prices
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 end)
 
 -- Function to freeze player
@@ -221,7 +177,6 @@ local function DrawText3D(x, y, z, text)
     end
 end
 
-<<<<<<< HEAD
 -- Function to get distance
 local function getDistance(config)
     local coords = GetEntityCoords(PlayerPedId())
@@ -291,52 +246,17 @@ local function displayPromptWithPrices(currentLocation) -- Accepts currentLocati
 
     -- Return the isMarketOpen status so the main loop can check it
     return isMarketOpen
-=======
--- Function to display prices from the current table
-local function displayPromptWithPrices()
-    local playerCoords = GetEntityCoords(PlayerPedId())
-    local closestLocation = nil
-    local closestDistance = nil
-
-    -- Randame artimiausią lokaciją
-    for _, location in pairs(Config.StockMarketLocations) do
-        local distance = Vdist(playerCoords, location.x, location.y, location.z)
-        if not closestDistance or distance < closestDistance then
-            closestDistance = distance
-            closestLocation = location
-        end
-    end
-
-    -- Jei artimiausia lokacija yra pakankamai arti, rodome prompt su tam tikromis akcijomis
-    if closestLocation and closestDistance < 2.0 then
-        local text = Translations.promptText or "Press [G] to trade"
-        for _, stockId in pairs(closestLocation.stocks) do
-            local stock = Config.Stocks[stockId]
-            if stock then
-                local prices = currentStockPrices[stockId] or { buy = stock.price, sell = stock.price }
-                text = text .. string.format("\n%s: $%.2f/ $%.2f", stock.label, prices.buy, prices.sell)
-            end
-        end
-        DrawText3D(closestLocation.x, closestLocation.y, closestLocation.z + 0.25, text)
-    end
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 end
 
 -- Function to open the menu with a new price request
 local function openStockMarketMenu(location)
-<<<<<<< HEAD
     requestPricesFromServer() -- Request prices from the server
     Citizen.Wait(100)         -- Small wait
-=======
-    requestPricesFromServer() -- Užklausiame kainų iš serverio
-    Citizen.Wait(100) -- Nedidelis laukimas
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
 
     local elements = {}
     for _, stockId in pairs(location.stocks) do
         local stock = Config.Stocks[stockId]
         if stock then
-<<<<<<< HEAD
             local buyPrice = 0
             local sellPrice = 0
             if currentStockPrices[stockId] then
@@ -356,15 +276,10 @@ local function openStockMarketMenu(location)
                     text = stock.label
                 }
             })
-=======
-            table.insert(elements, { label = string.format(Translations.buyOption, stock.label), value = "buy_" .. stockId })
-            table.insert(elements, { label = string.format(Translations.sellOption, stock.label), value = "sell_" .. stockId })
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         end
     end
 
     MenuData.Open('default', GetCurrentResourceName(), 'stock_menu', {
-<<<<<<< HEAD
         title = location.name, -- Display only location name at the top
         subtext = "",         -- Nothing below the title
         align = 'top-left',
@@ -571,51 +486,9 @@ Citizen.CreateThread(function()
         -- If player is not near any location, we can wait longer, otherwise check frequently
         if not currentlyNearLocation then
             Citizen.Wait(500) -- Shorter check when far
-=======
-        title = Translations.menuTitle,
-        align = 'top-left',
-        elements = elements
-    }, function(data, menu)
-        if data.current.value:find("buy_") then
-            TriggerServerEvent('stockmarket:buyStock', data.current.value:gsub("buy_", ""), 1, location.name)
-        elseif data.current.value:find("sell_") then
-            TriggerServerEvent('stockmarket:sellStock', data.current.value:gsub("sell_", ""), 1, location.name)
-        end
-    end, function(data, menu)
-        menu.close()
-        freezePlayer(false)
-    end)
-end
-
--- Main thread
-Citizen.CreateThread(function()
-    while true do
-        local playerCoords = GetEntityCoords(PlayerPedId())
-        local isNearLocation = false
-
-        for _, location in pairs(Config.StockMarketLocations) do
-            local distance = Vdist(playerCoords, location.x, location.y, location.z)
-
-            if distance < 2.0 then
-                displayPromptWithPrices(location) -- Parodome 3D tekstą
-                if IsControlJustReleased(0, Config.keys["G"]) then
-                    freezePlayer(true)
-                    openStockMarketMenu(location) -- Perdavimo lokacija į meniu atidarymą
-                end
-                isNearLocation = true
-                Citizen.Wait(0) -- Dažnas tikrinimas, kai arti
-                break
-            end
-        end
-
-        if not isNearLocation then
-            Citizen.Wait(1000) -- Retesnis tikrinimas, kai toli
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
         end
     end
 end)
-
-<<<<<<< HEAD
 -- Blip creation and management system (taken from vorp_banking)
 local function AddBlip(index)
     local locationData = Config.StockMarketLocations[index]
@@ -696,24 +569,12 @@ CreateThread(function()
             end
         end
         Wait(sleep)
-=======
--- Creating blips
-Citizen.CreateThread(function()
-    for _, location in pairs(Config.StockMarketLocations) do
-        local blip = Citizen.InvokeNative(0x554D9D53F696D002, 1664425300, location.x, location.y, location.z) -- Blip handle
-        SetBlipSprite(blip, Config.Blip.sprite, 1) -- Ikona
-        SetBlipScale(blip, 1.0) -- Blip size
-        Citizen.InvokeNative(0x9CB1A1623062F402, blip, location.name) -- Nustatome pavadinimą
-        Citizen.InvokeNative(0x662D364ABF16DE2F, blip, Config.Blip.color) -- Spalva
-        table.insert(blips, blip)
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
     end
 end)
 
 -- Removing blips when the resource stops
 AddEventHandler("onResourceStop", function(resourceName)
     if resourceName == GetCurrentResourceName() then
-<<<<<<< HEAD
         DebugPrint("Removing all blips...")
         for index, locationData in pairs(Config.StockMarketLocations) do
             if locationData.BlipHandle then
@@ -731,10 +592,5 @@ AddEventHandler("onResourceStop", function(resourceName)
         resetPreviewState()
         freezePlayer(false)
         DebugPrint("All blips removed.")
-=======
-        for _, blip in pairs(blips) do
-            RemoveBlip(blip)
-        end
->>>>>>> 82f0f5baca7e755752bf4671475a2533c9dcb5cb
     end
 end)
